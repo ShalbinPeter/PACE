@@ -1,0 +1,40 @@
+import fs from "fs";
+
+const GITHUB_TOKEN = "YOUR_GITHUB_TOKEN";
+const OWNER = "your-username";
+const REPO = "your-repo";
+const FILE_PATH_IN_REPO = "uploads/example.txt";
+const LOCAL_FILE_PATH = "./example.txt";
+const COMMIT_MESSAGE = "Upload file via API";
+
+async function uploadFile() {
+  const content = fs.readFileSync(LOCAL_FILE_PATH, "utf8");
+  const base64Content = Buffer.from(content).toString("base64");
+
+  const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH_IN_REPO}`;
+
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Authorization": `Bearer ${GITHUB_TOKEN}`,
+      "Accept": "application/vnd.github+json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: COMMIT_MESSAGE,
+      content: base64Content
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("Upload failed:", data);
+    return;
+  }
+
+  console.log("File uploaded successfully!");
+  console.log(data.content.html_url);
+}
+
+uploadFile();
